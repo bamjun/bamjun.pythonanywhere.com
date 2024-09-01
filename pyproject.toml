@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "bamjun-pythonanywhere-com"
+version = "0.1.0"
+description = ""
+authors = ["bamjun <khy5116@naver.com>"]
+readme = "README.md"
+packages = [{include = "bamjun"}]
+
+[tool.poetry.dependencies]
+python = "3.10.5"
+django = "4.0.6"
+python-decouple = "^3.8"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.8.0"
+isort = "^5.13.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
