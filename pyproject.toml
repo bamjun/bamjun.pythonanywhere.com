@@ -10,12 +10,16 @@ packages = [{include = "bamjun"}]
 python = "3.10.5"
 django = "4.0.6"
 python-decouple = "^3.8"
-typing-extensions = "3.10.0.2"  # 특정 버전 명시 (pythonanywhere에서 수정불가)
+typing-extensions = "4.0.0"  # 특정 버전 명시 (pythonanywhere에서 수정불가)
 
 
 # [tool.poetry.group.dev.dependencies]
 # black = "^24.8.0"
 # isort = "^5.13.2"
+pillow = "9.0.0"
+django-cleanup = "8.1.0"
+django-allauth = "0.61.1"
+django-htmx = "1.19.0"
 
 [build-system]
 requires = ["poetry-core"]

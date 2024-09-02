@@ -1,0 +1,339 @@
+{% extends "layouts/blank.html" %} {% block content %}
+
+<!-- <div class="max-w-4xl mx-auto px-8 py-24">
+        <h1>New Project</h1>
+    </div> -->
+
+<style>
+  .sidebar a {
+    padding: 10px 15px; /* 링크 패딩 */
+    text-decoration: none; /* 링크 밑줄 제거 */
+    font-size: 18px; /* 폰트 크기 */
+    color: white; /* 폰트 색상 */
+    display: block; /* 블록 레벨 요소로 표시 */
+  }
+
+  .sidebar a:hover {
+    color: #000000; /* 호버 시 색상 변경 */
+  }
+
+  .layout {
+    display: flex; /* flexbox 레이아웃 사용 */
+  }
+
+  .sidebar {
+    padding-left: 3px;
+    width: 150px; /* 사이드바의 고정 넓이 */
+    /* 기존 사이드바 스타일 */
+    color: white;
+  }
+
+  #calendar {
+    flex-grow: 1; /* 남은 공간을 모두 채움 */
+    /* 높이 설정 유지 */
+  }
+
+  .layout {
+    display: flex; /* flexbox 레이아웃 사용 */
+    /* flex-direction: column;  세로 방향으로 요소 정렬 */
+    height: calc(100vh - 5rem); /* 헤더 높이를 제외한 전체 높이 */
+    overflow: auto; /* 내용이 레이아웃을 초과할 경우 스크롤바 표시 */
+  }
+  .btn-updown {
+    font-size: 12px;
+  }
+</style>
+
+<div class="layout">
+  <div class="sidebar bg-blue-400">
+    <ul>
+      <li id="view_today" style="text-align: center">2024-04-07</li>
+      <li><a href="#">🔵 Todo</a></li>
+      <li><a href="#">🟢 완료</a></li>
+      <li><a href="#">🟠 진행중</a></li>
+      <li><a id="monthly" href="#">월별</a></li>
+      <li><a id="weekly" href="#">주별</a></li>
+      <li><a id="daily" href="#">일별</a></li>
+      <li>
+        <button class="btn-updown" id="date_previous">◀️</button>
+        <button class="btn-updown" id="date_next">▶️</button>
+      </li>
+    </ul>
+  </div>
+  <div id="calendar"></div>
+</div>
+
+<!-- CDN과 브라우저 환경에서 namespace -->
+<link
+  rel="stylesheet"
+  href="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.css"
+/>
+<link
+  rel="stylesheet"
+  href="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.css"
+/>
+<link
+  rel="stylesheet"
+  href="https://uicdn.toast.com/tui.time-picker/latest/tui-time-picker.css"
+/>
+<script src="https://uicdn.toast.com/calendar/latest/toastui-calendar.ie11.min.js"></script>
+<script src="https://uicdn.toast.com/tui.time-picker/latest/tui-time-picker.min.js"></script>
+<script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.3/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chance/1.1.8/chance.min.js"></script>
+<script>
+  const Calendar = tui.Calendar;
+
+  const container = document.getElementById("calendar");
+  const options = {
+    defaultView: "week", // 월별 뷰로 설정
+    taskView: true, // 할 일 목록 활성화
+    scheduleView: true, // 일정 목록 활성화
+    // calendars: MOCK_CALENDARS,
+    useFormPopup: true,
+    useDetailPopup: true,
+    template: {
+      monthDayName: function (dayname) {
+        // 여기에서는 단순히 요일명을 반환합니다.
+        return (
+          '<span class="calendar-week-dayname">' + dayname.label + "</span>"
+        );
+      },
+      monthDate: function (date) {
+        // 현재 날짜와 달력의 날짜가 일치하는지 확인
+        var today = tui.Calendar.Date.today();
+        var className = today.equals(date) ? "calendar-today" : "";
+        return '<span class="' + className + '">' + date.getDate() + "</span>";
+      },
+      popupIsAllday: function () {
+        return "All day?";
+      },
+      popupStateFree: function () {
+        return "🏝️ Free";
+      },
+      popupStateBusy: function () {
+        return "🔥 Busy";
+      },
+      titlePlaceholder: function () {
+        return "Enter title";
+      },
+      locationPlaceholder: function () {
+        return "Enter location";
+      },
+      startDatePlaceholder: function () {
+        return "Start date";
+      },
+      endDatePlaceholder: function () {
+        return "End date";
+      },
+      popupSave: function () {
+        return "Add Event";
+      },
+      popupUpdate: function () {
+        return "Update Event";
+      },
+      popupEdit: function () {
+        return "Modify";
+      },
+      popupDelete: function () {
+        return "Remove";
+      },
+      popupDetailTitle: function (data) {
+        return "Detail of " + data.title;
+      },
+    },
+    timezone: {
+      usageStatistics: false,
+      zones: [
+        {
+          timezoneName: "Asia/Seoul",
+          displayLabel: "Seoul",
+          tooltip: "UTC+9:00",
+        },
+        {
+          timezoneName: "America/New_York",
+          displayLabel: "NY",
+          tooltip: "UTC-04:00",
+        },
+      ],
+    },
+    calendars: [
+      {
+        id: "cal1",
+        name: "Todo",
+        backgroundColor: "#1973B7",
+      },
+      {
+        id: "cal2",
+        name: "완료",
+        backgroundColor: "#3CD071",
+      },
+      {
+        id: "cal3",
+        name: "진행중",
+        backgroundColor: "#F96C33",
+      },
+    ],
+  };
+
+  const calendar = new Calendar(container, options);
+
+  calendar.createEvents([
+    {
+      id: "event1",
+      calendarId: "cal2",
+      title: "주간 회의",
+      start: "2024-04-06T09:00:00",
+      end: "2024-04-06T10:00:00",
+    },
+    {
+      id: "event2",
+      calendarId: "cal1",
+      title: "점심 약속",
+      start: "2024-04-06T12:00:00",
+      end: "2024-04-06T13:00:00",
+    },
+    {
+      id: "event3",
+      calendarId: "cal3",
+      title: "휴가",
+      start: "2024-04-06",
+      end: "2024-04-06",
+      isAllday: true,
+      category: "allday",
+    },
+  ]);
+
+  calendar.setDate(new Date());
+
+  // calendar.setOptions({
+  //   useFormPopup: true,
+  //   useDetailPopup: true,
+  // });
+
+  calendar.render();
+
+  let now_view_time = "week";
+
+  // 월간 뷰로 변경
+  // 월간 뷰로 변경하는 버튼
+  const button_monthly = document.getElementById("monthly");
+  button_monthly.addEventListener("click", function () {
+    calendar.changeView("month");
+    now_view_time = "month";
+    calendar.setDate(new Date());
+    updateViewToday();
+  });
+
+  // 주간 뷰로 변경하는 버튼
+  const button_weekly = document.getElementById("weekly");
+  button_weekly.addEventListener("click", function () {
+    calendar.changeView("week");
+    now_view_time = "week";
+    calendar.setDate(new Date());
+    updateViewToday();
+  });
+
+  // 일간 뷰로 변경하는 버튼
+  const button_daily = document.getElementById("daily");
+  button_daily.addEventListener("click", function () {
+    calendar.changeView("day");
+    now_view_time = "day";
+    calendar.setDate(new Date());
+    updateViewToday();
+  });
+
+  const btn_date_previous = document.getElementById("date_previous");
+  btn_date_previous.addEventListener("click", function () {
+    const currentDate = calendar.getDate();
+    if (now_view_time == "day") {
+      const prevDay = new Date(currentDate);
+      prevDay.setDate(prevDay.getDate() - 1);
+      calendar.setDate(prevDay);
+    } else if (now_view_time == "week") {
+      const prevWeek = new Date(currentDate);
+      prevWeek.setDate(prevWeek.getDate() - 7);
+      calendar.setDate(prevWeek);
+    } else if (now_view_time == "month") {
+      const prevMonth = new Date(currentDate);
+      prevMonth.setMonth(prevMonth.getMonth() - 1);
+      calendar.setDate(prevMonth);
+    }
+    updateViewToday();
+  });
+
+  const btn_date_next = document.getElementById("date_next");
+  btn_date_next.addEventListener("click", function () {
+    const currentDate = calendar.getDate();
+    if (now_view_time == "day") {
+      const nextDay = new Date(currentDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+      calendar.setDate(nextDay);
+    } else if (now_view_time == "week") {
+      const nextWeek = new Date(currentDate);
+      nextWeek.setDate(nextWeek.getDate() + 7);
+      calendar.setDate(nextWeek);
+    } else if (now_view_time == "month") {
+      const nextMonth = new Date(currentDate);
+      nextMonth.setMonth(nextMonth.getMonth() + 1);
+      calendar.setDate(nextMonth);
+    }
+    updateViewToday();
+  });
+
+  // 달력의 현재 날짜를 가져와서 YYYY-MM-DD 형식의 문자열로 변환하는 함수
+  function getCurrentDateString(calendar) {
+    const currentDate = calendar.getDate();
+    const year = currentDate.getFullYear();
+    const month = String(currentDate.getMonth() + 1).padStart(2, "0"); // MM 형식으로 만들기
+    const day = String(currentDate.getDate()).padStart(2, "0"); // DD 형식으로 만들기
+    return `${year}-${month}-${day}`;
+  }
+
+  // 각 이벤트 리스너 내에서 달력의 날짜가 변경될 때마다 #view_today 업데이트
+  function updateViewToday() {
+    document.getElementById("view_today").textContent =
+      getCurrentDateString(calendar);
+  }
+
+  function displayEvents() {
+    var events = generateRandomEvents(
+      cal.getViewName(),
+      cal.getDateRangeStart(),
+      cal.getDateRangeEnd()
+    );
+    cal.clear();
+    cal.createEvents(events);
+  }
+
+  function displayRenderRange() {
+    var viewName = cal.getViewName();
+
+    range.textContent = getNavbarRange(
+      cal.getDateRangeStart(),
+      cal.getDateRangeEnd(),
+      viewName
+    );
+  }
+
+  todayButton.addEventListener("click", function () {
+    cal.today();
+    displayEvents();
+    displayRenderRange();
+  });
+  prevButton.addEventListener("click", function () {
+    cal.prev();
+    displayEvents();
+    displayRenderRange();
+  });
+  nextButton.addEventListener("click", function () {
+    cal.next();
+    displayEvents();
+    displayRenderRange();
+  });
+
+  displayEvents();
+  displayRenderRange();
+</script>
+
+{% endblock %}
